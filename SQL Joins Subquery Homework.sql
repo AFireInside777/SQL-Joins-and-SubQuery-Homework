@@ -1,21 +1,19 @@
 --1) List all customers who live in Texas
-select order_.order_id, order_.customer_id, customer.first_name, customer.last_name, customer.customer_state
-from order_
-inner join customer
-on order_.customer_id = customer.customer_id
-where customer_state = 'VA';
---The Homework says to look for customer that live in Texas
---But no one in the database lives in Texas, and I would not be able to show the query works if there's no returned rows
---So I searched for the state that appeared the most in this DB
+select address_id, address, district
+from address
+where district = 'Texas'
+--Your tables ONLY SHOW EMPLOYEES THAT LIVE IN TEXAS
 
 --2) Get all payments above $6.99
-select order_.order_id, order_.customer_id, customer.first_name, customer.last_name, customer.customer_state
-from order_
+select customer.first_name, customer.last_name, payment.amount
+from payment
 inner join customer
-on order_.customer_id = customer.customer_id
-where amount > 6.99;
+on payment.customer_id = customer.customer_id
+where amount > 6.99
+order by amount asc;
 
 --3) Show all customers names who have made payments over $175 (use subqueries)
+--THERE ARE NO PAYMENTS IN YOUR TABLES THAT ARE OVER $175
 select store_id, first_name, last_name
 from customer
 where customer_id in (
@@ -30,37 +28,25 @@ group by store_id, first_name, last_name;
 
 --4) List all customers that live in Nepal (use the city table)
 --The city Table does not have anyone in Nepal, so I used Nador
---This unfortunately does not show any results, as there is no primary/foreign key chain that can connect the customer table to the city table
---The data here is different than what is in Brandon's video, so not sure which keys were supposed to connect
-select customer.first_name, customer.last_name, customer.email, customer.city
+--I successfully connected customer to city, but there is still no one in Nepal or Nador.
+--However, if you search for Nador, a result will show
+
+select customer.first_name, customer.last_name, customer.email, city.city
 from customer
-full join store
-on customer.store_id = store.store_id
+full join rental
+on customer.customer_id = rental.customer_id
+full join payment
+on rental.rental_id = payment.rental_id 
+full join staff
+on payment.staff_id = staff.staff_id
 full join address
-on address.address_id = store.address_id 
+on staff.address_id = address.address_id
 full join city
-on address.city_id = city.city_id 
+on address.city_id = city.city_id
 where city.city = 'Nador';
 
---4) Also tried using a subquery
-select first_name, last_name, city
-from customer
-where city in (
-	select city
-	from city
-	where city = 'Nador'
-);
 
 --5) Which staff member had the most transactions?
---For this one, I need help with this one, I'm not sure which column I am supposed to be getting data from
-select first_name, last_name, store_id
-from staff
-where staff_id in (
-	select staff_id
-	from rental
-)
-group by first_name, last_name, store_id;
-
 --The below query shows Mike has 8,040 rentals and Jon had 8,004
 select staff.first_name, count(*)
 from staff
@@ -86,25 +72,16 @@ and amount > 6.99
 order by customer_id asc;
 
 --8) How many free rentals did our stores give away?
---select customer_id, amount
---from payment
---where rental_id in (
---	select rental_id
---	from rental
---)
---and amount < 0.01
---order by customer_id asc;
-
---I'm not sure how else to identify the stores that have received an amount under $0.01
---Also, there are no amounts for $0.00. They all are either negative or the customer paid.
-select store.store_id, payment.amount
-from store
-full join address
-on store.address_id = address.address_id
-full join staff
-on address.address_id = staff.address_id 
+--The below query shows there are 24 rentals that sold with a price of $0.00
+select payment.amount, count(*)
+from rental
 full join payment
-on staff.staff_id = payment.staff_id
+on rental.rental_id = payment.rental_id
+full join staff
+on payment.staff_id = staff.staff_id
+full join store
+on staff.staff_id = store.manager_staff_id
 where amount < 0.01
-order by amount asc;
+group by payment.amount
+order by count(*) asc;
 
