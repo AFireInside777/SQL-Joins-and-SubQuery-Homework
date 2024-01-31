@@ -1,6 +1,8 @@
 --1) List all customers who live in Texas
-select address_id, address, district
-from address
+select customer_id, first_name, last_name, address, district
+from customer
+join address
+on customer.address_id = address.address_id 
 where district = 'Texas'
 --Your tables ONLY SHOW EMPLOYEES THAT LIVE IN TEXAS
 
@@ -9,8 +11,7 @@ select customer.first_name, customer.last_name, payment.amount
 from payment
 inner join customer
 on payment.customer_id = customer.customer_id
-where amount > 6.99
-order by amount asc;
+where amount > 6.99;
 
 --3) Show all customers names who have made payments over $175 (use subqueries)
 --THERE ARE NO PAYMENTS IN YOUR TABLES THAT ARE OVER $175
@@ -84,4 +85,6 @@ on staff.staff_id = store.manager_staff_id
 where amount < 0.01
 group by payment.amount
 order by count(*) asc;
+
+select * from payment
 
